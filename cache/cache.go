@@ -2,41 +2,45 @@ package cache
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
-	"os"
 
 	"github.com/nsengupta5/Cache-Simulator/utils"
 )
 
-const addressSize = 64
+const addressSize uint = 64
 
 type CacheLine struct {
-	Data  []byte `json:"data"`
-	Valid bool   `json:"valid"`
-	Tag   int    `json:"tag"`
-	Size  int    `json:"line_size"`
-	Index int    `json:"index"`
+	Valid    bool `json:"valid"`
+	Tag      uint `json:"tag"`
+	Freq     uint `json:"frequency"`
+	LFUIndex int  `json:"lru_index"`
+	Index    int  `json:"index"`
 }
 
 type CacheSet struct {
-	Lines []CacheLine
-	Size  int `json:"set_size"`
+	Lines  []CacheLine       `json:"lines"`
+	Size   uint              `json:"set_size"`
+	Policy ReplacementPolicy `json:"replacement_policy"`
 }
 
 type Cache struct {
 	Sets       []CacheSet `json:"sets"`
 	Name       string     `json:"name"`
-	Size       int        `json:"size"`
-	Policy     string     `json:"replacement_policy"`
+	Size       uint       `json:"size"`
+	PolicyName string     `json:"replacement_policy"`
 	Kind       string     `json:"kind"`
-	LineSize   int        `json:"line_size"`
-	TagSize    int        `json:"tag_size"`
-	IndexSize  int        `json:"index_size"`
-	OffsetSize int        `json:"offset_size"`
+	LineSize   uint       `json:"line_size"`
+	TagSize    uint       `json:"tag_size"`
+	IndexSize  uint       `json:"index_size"`
+	OffsetSize uint       `json:"offset_size"`
+	Hits       uint       `json:"hits"`
+	Misses     uint       `json:"misses"`
 }
 
 type CacheConfig struct {
-	Caches []Cache `json:"caches"`
+	Caches         []Cache `json:"caches"`
+	MemoryAccesses int     `json:"memory_accesses"`
 }
 
 func (cache *Cache) SetLinesSize() {
@@ -60,7 +64,7 @@ func (cache *Cache) SetLinesSize() {
 
 func (cache *Cache) SetSetsSize() {
 	cacheLines := cache.Size / cache.LineSize
-	var setSize int
+	var setSize uint
 	switch cache.Kind {
 	case "direct":
 		setSize = cacheLines
@@ -80,8 +84,22 @@ func (cache *Cache) SetSetsSize() {
 }
 
 func (cache *Cache) SetDefaultPolicy() {
-	if cache.Kind != "direct" && cache.Policy == "" {
-		cache.Policy = "rr"
+	if cache.Kind != "direct" && cache.PolicyName == "" {
+		cache.PolicyName = "rr"
+	}
+
+	//
+	for s := range cache.Sets {
+		set := &cache.Sets[s]
+		capacity := len(set.Lines)
+		switch cache.PolicyName {
+		// case "lru":
+		// 	set.Policy = NewLRU()
+		case "lfu":
+			set.Policy = NewLFU(capacity)
+		default:
+			set.Policy = NewRR(capacity)
+		}
 	}
 }
 
@@ -91,29 +109,29 @@ func (cache *Cache) SetBitsSize() {
 	cache.TagSize = cache.getTagBits()
 }
 
-func (cache *Cache) getOffsetBits() int {
+func (cache *Cache) getOffsetBits() uint {
 	lineSize := cache.LineSize
-	return int(math.Log2(float64(lineSize)))
+	return uint(math.Log2(float64(lineSize)))
 }
 
-func (cache *Cache) getIndexBits() int {
-	var setSize int
+func (cache *Cache) getIndexBits() uint {
+	var setSize uint
 	switch cache.Kind {
 	case "direct":
 		setSize = cache.Size / cache.LineSize
-		return int(math.Log2(float64(setSize)))
+		return uint(math.Log2(float64(setSize)))
 	case "full":
 		return 0
-	case "2way", "4way", "6way", "8way":
-		setSize = len(cache.Sets)
-		return int(math.Log2(float64(setSize)))
+	case "2way", "4way", "8way":
+		setSize = uint(len(cache.Sets))
+		return uint(math.Log2(float64(setSize)))
 	default:
 		return 0
 	}
 }
 
-func (cache *Cache) getTagBits() int {
-	var tagBits int
+func (cache *Cache) getTagBits() uint {
+	var tagBits uint
 	switch cache.Kind {
 	case "full":
 		tagBits = addressSize - cache.OffsetSize
@@ -123,23 +141,52 @@ func (cache *Cache) getTagBits() int {
 	return tagBits
 }
 
-func InitializeCaches(config *CacheConfig) {
-	for i := range config.Caches {
-		cache := &config.Caches[i]
-		cache.SetSetsSize()
-		cache.SetLinesSize()
-		cache.SetBitsSize()
-		cache.SetDefaultPolicy()
+func (cache *Cache) CheckHitOrMiss(tag uint, index uint) (bool, *CacheLine, int) {
+	set := cache.Sets[index]
+
+	for i := range set.Lines {
+		line := &set.Lines[i]
+		if line.Tag == tag && line.Valid {
+			return true, line, i
+		}
+	}
+
+	return false, nil, -1
+}
+
+func (set *CacheSet) Insert(newLine *CacheLine) {
+	if len(set.Lines) == set.Policy.GetCapacity() {
+		evictedLineIdx := set.Policy.Evict()
+		set.Lines[evictedLineIdx] = *newLine
+	} else {
+		set.Lines = append(set.Lines, *newLine)
+		set.Policy.Insert(newLine)
+		set.Policy.Update(newLine)
 	}
 }
 
-func InitializeConfig(configFile string) CacheConfig {
-	cacheData, err := os.ReadFile(configFile)
-	utils.Check(err)
+func (cache *Cache) GetStats() map[string]interface{} {
+	return map[string]interface{}{
+		"hits":   cache.Hits,
+		"misses": cache.Misses,
+		"name":   cache.Name,
+	}
+}
 
-	var config CacheConfig
-	err = json.Unmarshal(cacheData, &config)
-	utils.Check(err)
+func (config *CacheConfig) PrintStats() {
+	cacheStats := []map[string]interface{}{}
 
-	return config
+	for _, cache := range config.Caches {
+		stats := cache.GetStats()
+		cacheStats = append(cacheStats, stats)
+	}
+
+	stats := map[string]interface{}{
+		"caches":               cacheStats,
+		"main_memory_accesses": config.MemoryAccesses,
+	}
+
+	output, err := json.MarshalIndent(stats, "", "  ")
+	utils.Check(err)
+	fmt.Println(string(output))
 }
