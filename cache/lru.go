@@ -78,8 +78,3 @@ func (lru *LRU) Evict() int {
 	}
 	return -1 // Indicate no eviction occurred (should not happen if cache is full)
 }
-
-// Get the capacity of the LRU cache
-func (lru *LRU) GetCapacity() int {
-	return lru.capacity
-}

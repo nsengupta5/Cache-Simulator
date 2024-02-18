@@ -19,6 +19,15 @@ import (
 // The addresss size for ths practical is 64 bits
 const addressSize int = 64
 
+// The ReplacementPolicy interface is a contract for implementing
+// different replacement policies for the cache
+type ReplacementPolicy interface {
+	Insert(line *CacheLine)
+	Update(line *CacheLine)
+	Evict() int
+}
+
+// The CacheLine struct represents a line in the cache
 type CacheLine struct {
 	Valid bool `json:"valid"`
 	Tag   int  `json:"tag"`
@@ -27,12 +36,14 @@ type CacheLine struct {
 	Age   int  `json:"last_access"`
 }
 
+// The CacheSet struct represents a set in the cache
 type CacheSet struct {
 	Lines  []CacheLine       `json:"lines"`
 	Size   int               `json:"set_size"`
 	Policy ReplacementPolicy `json:"replacement_policy"`
 }
 
+// The Cache struct represents a cache
 type Cache struct {
 	Sets       []CacheSet `json:"sets"`
 	Name       string     `json:"name"`
@@ -47,6 +58,8 @@ type Cache struct {
 	Misses     int        `json:"misses"`
 }
 
+// The CacheConfig struct represents the configuration of
+// the cache
 type CacheConfig struct {
 	Caches         []Cache `json:"caches"`
 	MemoryAccesses int     `json:"memory_accesses"`
