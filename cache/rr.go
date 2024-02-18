@@ -21,8 +21,11 @@ func NewRR(capacity int) *RR {
 func (c *RR) Insert(line *CacheLine) {
 }
 
+// Evict returns the index of the next line to evict
+// based on the round robin index
 func (c *RR) Evict() (index int) {
 	evictIndex := c.Index
+	// Wrap around the index if it exceeds the capacity
 	c.Index = (c.Index + 1) % c.Capacity
 	return evictIndex
 }

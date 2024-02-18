@@ -121,7 +121,8 @@ func (cs *CacheSimulator) handleCacheOperations(address string) bool {
 				Valid: true,
 				Index: -1,
 				Freq:  1,
-				Age:   0,
+				Prev:  nil,
+				Next:  nil,
 			}
 			if cache.Kind == "direct" {
 				set.Lines[0] = *data

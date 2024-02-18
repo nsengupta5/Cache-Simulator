@@ -22,18 +22,20 @@ const addressSize int = 64
 // The ReplacementPolicy interface is a contract for implementing
 // different replacement policies for the cache
 type ReplacementPolicy interface {
-	Insert(line *CacheLine)
-	Update(line *CacheLine)
-	Evict() int
+	Insert(line *CacheLine) // Insert inserts a line into the cache
+
+	Update(line *CacheLine) // Update updates the state of a line in the cache.
+
+	Evict() int // Evict returns the index of the line to evict
 }
 
 // The CacheLine struct represents a line in the cache
 type CacheLine struct {
-	Valid bool `json:"valid"`
-	Tag   int  `json:"tag"`
-	Freq  int  `json:"frequency"`
-	Index int  `json:"index"`
-	Age   int  `json:"last_access"`
+	Valid      bool       `json:"valid"`
+	Tag        int        `json:"tag"`
+	Freq       int        `json:"frequency"`
+	Index      int        `json:"index"`
+	Prev, Next *CacheLine `json:"-"`
 }
 
 // The CacheSet struct represents a set in the cache

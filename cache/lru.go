@@ -1,80 +1,78 @@
 package cache
 
 type LRU struct {
-	lines    []CacheLine
-	capacity int
+	capacity   int
+	cache      map[int]*CacheLine // Maps tags to pointers to cache lines
+	head, tail *CacheLine         // Pointers to head and tail of the doubly-linked list
 }
 
 func NewLRU(capacity int) *LRU {
 	return &LRU{
-		lines:    make([]CacheLine, capacity),
 		capacity: capacity,
+		cache:    make(map[int]*CacheLine),
 	}
 }
 
-// Insert a new cache line or update an existing one, resetting its age
+// Insert inserts a new cache line
 func (lru *LRU) Insert(line *CacheLine) {
-	// Increment age of all valid lines
-	for i := range lru.lines {
-		if lru.lines[i].Valid {
-			lru.lines[i].Age++
-		}
+	if existingLine, exists := lru.cache[line.Tag]; exists {
+		// Move the accessed line to the front of the list
+		lru.remove(existingLine)
+		lru.addToFront(existingLine)
+		return
 	}
 
-	// Find a place to insert the new cache line
-	oldestIndex := -1
-	oldestAge := -1
-	for i, l := range lru.lines {
-		if !l.Valid { // Empty spot found
-			lru.lines[i] = *line
-			lru.lines[i].Age = 0
-			lru.lines[i].Valid = true
-			return
-		} else if l.Age > oldestAge {
-			oldestAge = l.Age
-			oldestIndex = i
-		}
-	}
-
-	// Replace the oldest (least recently used) cache line if no empty spot
-	if oldestIndex != -1 {
-		lru.lines[oldestIndex] = *line
-		lru.lines[oldestIndex].Age = 0
-	}
+	// Insert the new cache line at the front of the list
+	lru.cache[line.Tag] = line
+	lru.addToFront(line)
 }
 
-// Update the age of a cache line, resetting it since it's been accessed
+// Update moves the accessed cache line to the front of the list,
+// marking it as most recently used
 func (lru *LRU) Update(line *CacheLine) {
-	// Increment age of all valid lines
-	for i := range lru.lines {
-		if lru.lines[i].Valid {
-			lru.lines[i].Age++
-		}
-	}
-
-	// Reset age of the accessed line
-	for i, l := range lru.lines {
-		if l.Tag == line.Tag && l.Valid {
-			lru.lines[i].Age = 0
-			break
-		}
+	if existingLine, exists := lru.cache[line.Tag]; exists {
+		lru.remove(existingLine)
+		lru.addToFront(existingLine)
 	}
 }
 
-// Evict the least recently used cache line based on age
+// Evict returns the index of the least recently used cache line
 func (lru *LRU) Evict() int {
-	oldestIndex := -1
-	oldestAge := -1
-	for i, l := range lru.lines {
-		if l.Valid && l.Age > oldestAge {
-			oldestAge = l.Age
-			oldestIndex = i
-		}
+	if lru.tail == nil {
+		return -1 // Cache is empty
 	}
-	if oldestIndex != -1 {
-		evictedTag := lru.lines[oldestIndex].Index
-		lru.lines[oldestIndex].Valid = false // Mark as evicted
-		return evictedTag
+
+	// Remove the least recently used cache line from the list
+	// which is the tail of the list
+	evictedIndex := lru.tail.Index
+	delete(lru.cache, lru.tail.Tag)
+	lru.remove(lru.tail)
+	return evictedIndex
+}
+
+// remove removes a cache line from the doubly-linked list
+func (lru *LRU) remove(line *CacheLine) {
+	if line.Prev != nil {
+		line.Prev.Next = line.Next
+	} else {
+		lru.head = line.Next
 	}
-	return -1 // Indicate no eviction occurred (should not happen if cache is full)
+	if line.Next != nil {
+		line.Next.Prev = line.Prev
+	} else {
+		lru.tail = line.Prev
+	}
+}
+
+// addToFront adds a cache line to the front of the doubly-linked list
+func (lru *LRU) addToFront(line *CacheLine) {
+	line.Next = lru.head
+	line.Prev = nil
+	if lru.head != nil {
+		lru.head.Prev = line
+	}
+	lru.head = line
+	if lru.tail == nil {
+		lru.tail = line
+	}
 }
