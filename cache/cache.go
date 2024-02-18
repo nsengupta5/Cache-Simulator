@@ -16,6 +16,7 @@ import (
 	"github.com/nsengupta5/Cache-Simulator/utils"
 )
 
+// The addresss size for ths practical is 64 bits
 const addressSize int = 64
 
 type CacheLine struct {

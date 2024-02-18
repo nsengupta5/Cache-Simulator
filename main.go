@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	// Read in the command line arguements
 	configFile := os.Args[1]
 	traceFile := os.Args[2]
 
