@@ -16,6 +16,6 @@ func GenerateReplacementPolicy(capacity int, policyName string) ReplacementPolic
 	case "rr":
 		return NewRR(capacity)
 	default:
-		return nil
+		return NewRR(capacity)
 	}
 }

@@ -1,5 +1,9 @@
 package main
 
+// This file contains the main function to run the cache simulator.
+// It reads in the command line arguements and initializes the cache configuration
+// and the cache simulator.
+
 import (
 	"os"
 
@@ -13,5 +17,6 @@ func main() {
 
 	config := cache.InitializeConfig(configFile)
 	cache.InitializeCaches(&config)
-	instruction.ReadTraceFile(&config, traceFile)
+	simulator := instruction.NewCacheSimulator(&config)
+	simulator.ReadTraceFile(traceFile)
 }

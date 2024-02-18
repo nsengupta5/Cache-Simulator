@@ -1,1 +1,18 @@
 # Cache-Simulator
+
+## Instructions
+
+To run using the executable:
+```bash
+./cache_simulator ./sample-inputs/<input-file> ./trace-files/<trace-file>
+```
+
+To compile and run:
+```bash
+go run main.go ./sample-inputs/<input-file> ./trace-files/<trace-file>
+```
+
+To build the executable:
+```bash
+go build -o cache_simulator main.go
+```

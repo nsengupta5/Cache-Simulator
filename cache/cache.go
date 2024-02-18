@@ -1,5 +1,13 @@
 package cache
 
+// This file contains the implementation of the cache and its components
+// The cache design is dynamically intialized based on the cache's kind
+// which allows for a flexible and scalable approach to simulating various
+// cache configurations by adjusting the number of sets and lines within
+// each cache according to its architecture. As such, it makes it especially
+// easy to extend to higher associativity caches and different replacement
+// policies.
+
 import (
 	"encoding/json"
 	"fmt"
@@ -45,6 +53,8 @@ type CacheConfig struct {
 
 /* ------------------- Cache Function ------------------- */
 
+// SetLiesSize sets the number of lines in each set
+// It checks the kind of cache and sets the number of lines accordingly
 func (cache *Cache) SetLinesSize() {
 	cacheLines := cache.Size / cache.LineSize
 	for i := range cache.Sets {
@@ -64,6 +74,8 @@ func (cache *Cache) SetLinesSize() {
 	}
 }
 
+// SetSetsSize sets the number of sets in the cache
+// It checks the kind of cache and sets the number of sets accordingly
 func (cache *Cache) SetSetsSize() {
 	cacheLines := cache.Size / cache.LineSize
 	var setSize int
@@ -85,12 +97,13 @@ func (cache *Cache) SetSetsSize() {
 	}
 }
 
+// SetDefaultPolicy sets the default replacement policy for the cache
 func (cache *Cache) SetDefaultPolicy() {
 	if cache.Kind != "direct" && cache.PolicyName == "" {
+		// Default policy for set associative caches is round robin
 		cache.PolicyName = "rr"
 	}
 
-	//
 	for s := range cache.Sets {
 		set := &cache.Sets[s]
 		capacity := len(set.Lines)
@@ -105,17 +118,21 @@ func (cache *Cache) SetDefaultPolicy() {
 	}
 }
 
+// SetBitsSize sets the number of bits for offset, index and tag
 func (cache *Cache) SetBitsSize() {
 	cache.OffsetSize = cache.getOffsetBits()
 	cache.IndexSize = cache.getIndexBits()
 	cache.TagSize = cache.getTagBits()
 }
 
+// getOffsetBits returns the number of bits for the offset
 func (cache *Cache) getOffsetBits() int {
 	lineSize := cache.LineSize
 	return int(math.Log2(float64(lineSize)))
 }
 
+// getIndexBits returns the number of bits for the index
+// The number of bits is dependent on the kind of cache
 func (cache *Cache) getIndexBits() int {
 	var setSize int
 	switch cache.Kind {
@@ -132,9 +149,12 @@ func (cache *Cache) getIndexBits() int {
 	}
 }
 
+// getTagBits returns the number of bits for the tag
+// The number of bits is dependent on the kind of cache
 func (cache *Cache) getTagBits() int {
 	var tagBits int
 	switch cache.Kind {
+	// The tag is the remaining bits before the offset and index bits
 	case "full":
 		tagBits = addressSize - cache.OffsetSize
 	default:
@@ -143,19 +163,25 @@ func (cache *Cache) getTagBits() int {
 	return tagBits
 }
 
-func (cache *Cache) CheckHitOrMiss(tag int, index int) (bool, *CacheLine, int) {
+// CheckHitOrMiss checks if the address is in the cache
+// It identifies the set from the index and looks for the tag in the set
+
+// It returns a boolean indicating if the address is in the cache and the cache line
+func (cache *Cache) CheckHitOrMiss(tag int, index int) (bool, *CacheLine) {
 	set := cache.Sets[index]
 
 	for i := range set.Lines {
 		line := &set.Lines[i]
+		// If the tag is the same and the line is valid, it's a hit
 		if line.Tag == tag && line.Valid {
-			return true, line, i
+			return true, line
 		}
 	}
 
-	return false, nil, -1
+	return false, nil
 }
 
+// GetStats returns the cache statistics
 func (cache *Cache) GetStats() map[string]interface{} {
 	return map[string]interface{}{
 		"hits":   cache.Hits,
@@ -166,17 +192,23 @@ func (cache *Cache) GetStats() map[string]interface{} {
 
 /* ------------------- Cache Set Function ------------------- */
 
+// Insert adds a new line to the set
+// This function is exclusive to the set associative caches
 func (set *CacheSet) Insert(newLine *CacheLine) {
 	for i := range set.Lines {
 		line := &set.Lines[i]
 		if !line.Valid {
+			// Set the index of the new line to the index of the invalid line
 			newLine.Index = i
+
+			// Update the policy with the new line
 			set.Policy.Insert(newLine)
 			set.Lines[i] = *newLine
 			return
 		}
 	}
 
+	// If the set is full, evict a line and insert the new line
 	evictIndex := set.Policy.Evict()
 	newLine.Index = evictIndex
 	set.Policy.Insert(newLine)
@@ -185,6 +217,7 @@ func (set *CacheSet) Insert(newLine *CacheLine) {
 
 /* ------------------- Cache Config Function ------------------- */
 
+// PrintStats prints the cache statistics
 func (config *CacheConfig) PrintStats() {
 	cacheStats := []map[string]interface{}{}
 
