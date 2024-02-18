@@ -9,8 +9,8 @@ type ReplacementPolicy interface {
 
 func GenerateReplacementPolicy(capacity int, policyName string) ReplacementPolicy {
 	switch policyName {
-	// case "lru":
-	// 	return NewLRU(capacity)
+	case "lru":
+		return NewLRU(capacity)
 	case "lfu":
 		return NewLFU(capacity)
 	case "rr":

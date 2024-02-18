@@ -130,22 +130,30 @@ CacheLine	cache/cache.go	/^type CacheLine struct {$/;"	s	package:cache
 CacheLine	instruction/instruction.go	/^type CacheLine = cache.CacheLine$/;"	a	package:instruction	typeref:typename:cache.CacheLine
 CacheSet	cache/cache.go	/^type CacheSet struct {$/;"	s	package:cache
 Caches	cache/cache.go	/^	Caches         []Cache `json:"caches"`$/;"	m	struct:cache.CacheConfig	typeref:typename:[]Cache
+Capacity	cache/lfu.go	/^	Capacity int$/;"	m	struct:cache.LFU	typeref:typename:int
+Capacity	cache/rr.go	/^	Capacity int$/;"	m	struct:cache.RR	typeref:typename:int
 Check	utils/utils.go	/^func Check(e error) {$/;"	f	package:utils
-CheckHitOrMiss	cache/cache.go	/^func (cache *Cache) CheckHitOrMiss(tag uint, index uint) (bool, *CacheLine, int) {$/;"	f	struct:cache.Cache	typeref:typename:(bool, *CacheLine, int)
-ConvertBinaryToUint	utils/utils.go	/^func ConvertBinaryToUint(binary string) uint {$/;"	f	package:utils	typeref:typename:uint
+CheckHitOrMiss	cache/cache.go	/^func (cache *Cache) CheckHitOrMiss(tag int, index int, offset int, size int) (bool, *CacheLine, /;"	f	struct:cache.Cache	typeref:typename:(bool, *CacheLine, int)
+ConvertBinaryToInt	utils/utils.go	/^func ConvertBinaryToInt(binary string) int {$/;"	f	package:utils	typeref:typename:int
 ConvertHexToBinary	utils/utils.go	/^func ConvertHexToBinary(hex string) string {$/;"	f	package:utils	typeref:typename:string
+ConvertStringToInt	utils/utils.go	/^func ConvertStringToInt(str string) int {$/;"	f	package:utils	typeref:typename:int
 ConvertStringToRune	utils/utils.go	/^func ConvertStringToRune(str string) rune {$/;"	f	package:utils	typeref:typename:rune
-ConvertStringToUint	utils/utils.go	/^func ConvertStringToUint(str string) uint {$/;"	f	package:utils	typeref:typename:uint
 Evict	cache/lfu.go	/^func (c *LFU) Evict() (index int) {$/;"	f	struct:cache.LFU	typeref:typename:(index int)
 Evict	cache/replacement_policy.go	/^	Evict() int$/;"	n	interface:cache.ReplacementPolicy	typeref:typename:int
 Evict	cache/rr.go	/^func (c *RR) Evict() (index int) {$/;"	f	struct:cache.RR	typeref:typename:(index int)
-FetchFromMemory	instruction/instruction.go	/^func FetchFromMemory(tag uint) *CacheLine {$/;"	f	package:instruction	typeref:typename:*CacheLine
-Freq	cache/cache.go	/^	Freq     uint `json:"frequency"`$/;"	m	struct:cache.CacheLine	typeref:typename:uint
+FetchFromMemory	instruction/instruction.go	/^func FetchFromMemory(tag int) *CacheLine {$/;"	f	package:instruction	typeref:typename:*CacheLine
+Freq	cache/cache.go	/^	Freq     int  `json:"frequency"`$/;"	m	struct:cache.CacheLine	typeref:typename:int
 GenerateReplacementPolicy	cache/replacement_policy.go	/^func GenerateReplacementPolicy(capacity int, policyName string) ReplacementPolicy {$/;"	f	package:cache	typeref:typename:ReplacementPolicy
-GetMemoryInfo	utils/utils.go	/^func GetMemoryInfo(tagSize uint, indexSize uint, kind string, address string) (uint, uint, uint)/;"	f	package:utils	typeref:typename:(uint, uint, uint)
-Hits	cache/cache.go	/^	Hits       uint       `json:"hits"`$/;"	m	struct:cache.Cache	typeref:typename:uint
+GetCapacity	cache/lfu.go	/^func (c *LFU) GetCapacity() int {$/;"	f	struct:cache.LFU	typeref:typename:int
+GetCapacity	cache/replacement_policy.go	/^	GetCapacity() int$/;"	n	interface:cache.ReplacementPolicy	typeref:typename:int
+GetCapacity	cache/rr.go	/^func (c *RR) GetCapacity() int {$/;"	f	struct:cache.RR	typeref:typename:int
+GetMemoryInfo	utils/utils.go	/^func GetMemoryInfo(tagSize int, indexSize int, kind string, address string) (int, int, int) {$/;"	f	package:utils	typeref:typename:(int, int, int)
+GetStats	cache/cache.go	/^func (cache *Cache) GetStats() map[string]interface{} {$/;"	f	struct:cache.Cache	typeref:typename:map[string]interface{}
+Heap	cache/lfu.go	/^	Heap     *LFUHeap$/;"	m	struct:cache.LFU	typeref:typename:*LFUHeap
+Hits	cache/cache.go	/^	Hits       int        `json:"hits"`$/;"	m	struct:cache.Cache	typeref:typename:int
 Index	cache/cache.go	/^	Index    int  `json:"index"`$/;"	m	struct:cache.CacheLine	typeref:typename:int
-IndexSize	cache/cache.go	/^	IndexSize  uint       `json:"index_size"`$/;"	m	struct:cache.Cache	typeref:typename:uint
+Index	cache/rr.go	/^	Index    int$/;"	m	struct:cache.RR	typeref:typename:int
+IndexSize	cache/cache.go	/^	IndexSize  int        `json:"index_size"`$/;"	m	struct:cache.Cache	typeref:typename:int
 Init	cache/lfu.go	/^func (c *LFU) Init() {$/;"	f	struct:cache.LFU
 InitializeCaches	cache/init.go	/^func InitializeCaches(config *CacheConfig) {$/;"	f	package:cache
 InitializeConfig	cache/init.go	/^func InitializeConfig(configFile string) CacheConfig {$/;"	f	package:cache	typeref:typename:CacheConfig
@@ -161,41 +169,41 @@ LRU	cache/lru.go	/^type LRU struct {$/;"	s	package:cache
 LRUNode	cache/lru.go	/^type LRUNode struct {$/;"	s	package:cache
 Len	cache/lfu.go	/^func (lfu LFUHeap) Len() int {$/;"	f	type:cache.LFUHeap	typeref:typename:int
 Less	cache/lfu.go	/^func (lfu LFUHeap) Less(i, j int) bool {$/;"	f	type:cache.LFUHeap	typeref:typename:bool
-LineSize	cache/cache.go	/^	LineSize   uint       `json:"line_size"`$/;"	m	struct:cache.Cache	typeref:typename:uint
+LineSize	cache/cache.go	/^	LineSize   int        `json:"line_size"`$/;"	m	struct:cache.Cache	typeref:typename:int
 Lines	cache/cache.go	/^	Lines  []CacheLine       `json:"lines"`$/;"	m	struct:cache.CacheSet	typeref:typename:[]CacheLine
 Lines	cache/lru.go	/^	Lines []*CacheLine$/;"	m	struct:cache.LRUNode	typeref:typename:[]*CacheLine
 MemoryAccesses	cache/cache.go	/^	MemoryAccesses int     `json:"memory_accesses"`$/;"	m	struct:cache.CacheConfig	typeref:typename:int
-Misses	cache/cache.go	/^	Misses     uint       `json:"misses"`$/;"	m	struct:cache.Cache	typeref:typename:uint
+Misses	cache/cache.go	/^	Misses     int        `json:"misses"`$/;"	m	struct:cache.Cache	typeref:typename:int
 Name	cache/cache.go	/^	Name       string     `json:"name"`$/;"	m	struct:cache.Cache	typeref:typename:string
 NewLFU	cache/lfu.go	/^func NewLFU(capacity int) *LFU {$/;"	f	package:cache	typeref:typename:*LFU
 NewLRU	cache/lru.go	/^func NewLRU(capacity int) *LRU {$/;"	f	package:cache	typeref:typename:*LRU
 NewRR	cache/rr.go	/^func NewRR(capacity int) *RR {$/;"	f	package:cache	typeref:typename:*RR
-OffsetSize	cache/cache.go	/^	OffsetSize uint       `json:"offset_size"`$/;"	m	struct:cache.Cache	typeref:typename:uint
+OffsetSize	cache/cache.go	/^	OffsetSize int        `json:"offset_size"`$/;"	m	struct:cache.Cache	typeref:typename:int
 Policy	cache/cache.go	/^	Policy ReplacementPolicy `json:"replacement_policy"`$/;"	m	struct:cache.CacheSet	typeref:typename:ReplacementPolicy
 PolicyName	cache/cache.go	/^	PolicyName string     `json:"replacement_policy"`$/;"	m	struct:cache.Cache	typeref:typename:string
 Pop	cache/lfu.go	/^func (lfu *LFUHeap) Pop() interface{} {$/;"	f	type:cache.LFUHeap	typeref:typename:interface{}
+PrintStats	cache/cache.go	/^func (config *CacheConfig) PrintStats() {$/;"	f	struct:cache.CacheConfig
 Push	cache/lfu.go	/^func (lfu *LFUHeap) Push(x interface{}) {$/;"	f	type:cache.LFUHeap
 RR	cache/rr.go	/^type RR struct {$/;"	s	package:cache
 ReadTraceFile	instruction/instruction.go	/^func ReadTraceFile(config *cache.CacheConfig, traceFile string) {$/;"	f	package:instruction
 ReplacementPolicy	cache/replacement_policy.go	/^type ReplacementPolicy interface {$/;"	i	package:cache
 SetBitsSize	cache/cache.go	/^func (cache *Cache) SetBitsSize() {$/;"	f	struct:cache.Cache
-SetCacheLines	cache/cache.go	/^func (cache *Cache) SetCacheLines() {$/;"	f	struct:cache.Cache
 SetDefaultPolicy	cache/cache.go	/^func (cache *Cache) SetDefaultPolicy() {$/;"	f	struct:cache.Cache
 SetLinesSize	cache/cache.go	/^func (cache *Cache) SetLinesSize() {$/;"	f	struct:cache.Cache
 SetSetsSize	cache/cache.go	/^func (cache *Cache) SetSetsSize() {$/;"	f	struct:cache.Cache
 Sets	cache/cache.go	/^	Sets       []CacheSet `json:"sets"`$/;"	m	struct:cache.Cache	typeref:typename:[]CacheSet
-Size	cache/cache.go	/^	Size       uint       `json:"size"`$/;"	m	struct:cache.Cache	typeref:typename:uint
-Size	cache/cache.go	/^	Size   uint              `json:"set_size"`$/;"	m	struct:cache.CacheSet	typeref:typename:uint
+Size	cache/cache.go	/^	Size       int        `json:"size"`$/;"	m	struct:cache.Cache	typeref:typename:int
+Size	cache/cache.go	/^	Size   int               `json:"set_size"`$/;"	m	struct:cache.CacheSet	typeref:typename:int
 Swap	cache/lfu.go	/^func (lfu LFUHeap) Swap(i, j int) {$/;"	f	type:cache.LFUHeap
-Tag	cache/cache.go	/^	Tag      uint `json:"tag"`$/;"	m	struct:cache.CacheLine	typeref:typename:uint
-TagSize	cache/cache.go	/^	TagSize    uint       `json:"tag_size"`$/;"	m	struct:cache.Cache	typeref:typename:uint
+Tag	cache/cache.go	/^	Tag      int  `json:"tag"`$/;"	m	struct:cache.CacheLine	typeref:typename:int
+TagSize	cache/cache.go	/^	TagSize    int        `json:"tag_size"`$/;"	m	struct:cache.Cache	typeref:typename:int
 Update	cache/lfu.go	/^func (c *LFU) Update(line *CacheLine) {$/;"	f	struct:cache.LFU
 Update	cache/lfu.go	/^func (lfu *LFUHeap) Update(line *CacheLine) {$/;"	f	type:cache.LFUHeap
 Update	cache/replacement_policy.go	/^	Update(line *CacheLine)$/;"	n	interface:cache.ReplacementPolicy
 Update	cache/rr.go	/^func (c *RR) Update(line *CacheLine) {$/;"	f	struct:cache.RR
-UpdateCaches	instruction/instruction.go	/^func UpdateCaches(config *cache.CacheConfig, data *CacheLine, index uint) {$/;"	f	package:instruction
+UpdateCaches	instruction/instruction.go	/^func UpdateCaches(config *cache.CacheConfig, data *CacheLine, memAddress string, breakIdx int) {$/;"	f	package:instruction
 Valid	cache/cache.go	/^	Valid    bool `json:"valid"`$/;"	m	struct:cache.CacheLine	typeref:typename:bool
-addressSize	cache/cache.go	/^const addressSize uint = 64$/;"	c	package:cache	typeref:typename:uint
+addressSize	cache/cache.go	/^const addressSize int = 64$/;"	c	package:cache	typeref:typename:int
 cache	cache/cache.go	/^package cache$/;"	p
 cache	cache/cache_test.go	/^package cache$/;"	p
 cache	cache/init.go	/^package cache$/;"	p
@@ -237,14 +245,11 @@ caches	sample-outputs/output-xz-_2way_lru.json	/^  "caches": [$/;"	a
 caches	sample-outputs/output-xz-_2way_rr.json	/^  "caches": [$/;"	a
 caches	sample-outputs/output-xz-l1l2l3.json	/^  "caches": [$/;"	a
 caches	sample-outputs/output-xz-l1l2l3direct.json	/^  "caches": [$/;"	a
-capacity	cache/lfu.go	/^	capacity int$/;"	m	struct:cache.LFU	typeref:typename:int
 capacity	cache/lru.go	/^	capacity   int$/;"	m	struct:cache.LRU	typeref:typename:int
-capacity	cache/rr.go	/^	capacity int$/;"	m	struct:cache.RR	typeref:typename:int
-getIndexBits	cache/cache.go	/^func (cache *Cache) getIndexBits() uint {$/;"	f	struct:cache.Cache	typeref:typename:uint
-getOffsetBits	cache/cache.go	/^func (cache *Cache) getOffsetBits() uint {$/;"	f	struct:cache.Cache	typeref:typename:uint
-getTagBits	cache/cache.go	/^func (cache *Cache) getTagBits() uint {$/;"	f	struct:cache.Cache	typeref:typename:uint
+getIndexBits	cache/cache.go	/^func (cache *Cache) getIndexBits() int {$/;"	f	struct:cache.Cache	typeref:typename:int
+getOffsetBits	cache/cache.go	/^func (cache *Cache) getOffsetBits() int {$/;"	f	struct:cache.Cache	typeref:typename:int
+getTagBits	cache/cache.go	/^func (cache *Cache) getTagBits() int {$/;"	f	struct:cache.Cache	typeref:typename:int
 head	cache/lru.go	/^	head       *LRUNode$/;"	m	struct:cache.LRU	typeref:typename:*LRUNode
-heap	cache/lfu.go	/^	heap     *LFUHeap$/;"	m	struct:cache.LFU	typeref:typename:*LFUHeap
 hits	sample-outputs/output-bwaves-direct.json	/^      "hits": 13792084,$/;"	n	object:caches.0
 hits	sample-outputs/output-bwaves-l1l2l3.json	/^      "hits": 10490401,$/;"	n	object:caches.0
 hits	sample-outputs/output-bwaves-l1l2l3.json	/^      "hits": 1863681,$/;"	n	object:caches.2
@@ -287,7 +292,6 @@ hits	sample-outputs/output-xz-l1l2l3.json	/^      "hits": 19991106,$/;"	n	object
 hits	sample-outputs/output-xz-l1l2l3direct.json	/^      "hits": 115493,$/;"	n	object:caches.1
 hits	sample-outputs/output-xz-l1l2l3direct.json	/^      "hits": 19991106,$/;"	n	object:caches.0
 hits	sample-outputs/output-xz-l1l2l3direct.json	/^      "hits": 29272,$/;"	n	object:caches.2
-index	cache/rr.go	/^	index    int$/;"	m	struct:cache.RR	typeref:typename:int
 instruction	instruction/instruction.go	/^package instruction$/;"	p
 key	cache/lru.go	/^	key   int$/;"	m	struct:cache.LRUNode	typeref:typename:int
 keyNodeMap	cache/lru.go	/^	keyNodeMap map[int]*LRUNode$/;"	m	struct:cache.LRU	typeref:typename:map[int]*LRUNode

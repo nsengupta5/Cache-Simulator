@@ -1,84 +1,65 @@
 package cache
 
-import "container/heap"
-
-type LFUHeap []*CacheLine
-
-func (lfu LFUHeap) Len() int {
-	return len(lfu)
-}
-
-func (lfu LFUHeap) Less(i, j int) bool {
-	return lfu[i].Freq < lfu[j].Freq
-}
-
-func (lfu LFUHeap) Swap(i, j int) {
-	lfu[i], lfu[j] = lfu[j], lfu[i]
-	lfu[i].LFUIndex = i
-	lfu[j].LFUIndex = j
-}
-
-func (lfu *LFUHeap) Push(x interface{}) {
-	lfuLen := len(*lfu)
-	item := x.(*CacheLine)
-	item.LFUIndex = lfuLen
-	*lfu = append(*lfu, item)
-}
-
-func (lfu *LFUHeap) Pop() interface{} {
-	old := *lfu
-	n := len(old)
-	item := old[n-1]
-	item.LFUIndex = -1
-	*lfu = old[0 : n-1]
-	return item
-}
-
-func (lfu *LFUHeap) Update(line *CacheLine) {
-	line.Freq++
-	heap.Fix(lfu, line.LFUIndex)
-}
-
 type LFU struct {
-	Capacity int
-	Heap     *LFUHeap
+	lines    []CacheLine
+	capacity int
 }
 
 func NewLFU(capacity int) *LFU {
-	lfuCache := &LFU{
-		Capacity: 0,
-		Heap:     &LFUHeap{},
+	return &LFU{
+		lines:    make([]CacheLine, capacity),
+		capacity: capacity,
 	}
-	heap.Init(lfuCache.Heap)
-	return lfuCache
 }
 
-func (c *LFU) Init() {
-	heap.Init(c.Heap)
-}
-
-func (c *LFU) Insert(line *CacheLine) {
-	if c.Capacity == 0 {
-		return
+// Insert a new cache line
+func (lfu *LFU) Insert(line *CacheLine) {
+	// Find an empty spot or the least frequently used cache line
+	minFreqIndex := -1
+	minFreq := int(^uint(0) >> 1) // Initialize to max int value
+	for i, l := range lfu.lines {
+		if !l.Valid { // Empty spot found
+			minFreqIndex = i
+			break
+		} else if l.Freq < minFreq {
+			minFreq = l.Freq
+			minFreqIndex = i
+		}
 	}
-	if c.Capacity == c.Heap.Len() {
-		c.Evict()
+	if minFreqIndex != -1 {
+		lfu.lines[minFreqIndex] = *line
 	}
-	heap.Push(c.Heap, line)
-	// TODO fix
 }
 
-func (c *LFU) Evict() (index int) {
-	if c.Heap.Len() == 0 {
-		return -1
+// Update the frequency of a cache line
+func (lfu *LFU) Update(line *CacheLine) {
+	for i, l := range lfu.lines {
+		if l.Tag == line.Tag && l.Valid {
+			lfu.lines[i].Freq++
+			break
+		}
 	}
-	return heap.Pop(c.Heap).(*CacheLine).Index
 }
 
-func (c *LFU) Update(line *CacheLine) {
-	(*c.Heap).Update(line)
+// Evict the least frequently used cache line
+func (lfu *LFU) Evict() int {
+	minFreqIndex := -1
+	minFreq := int(^uint(0) >> 1) // Initialize to max int value
+	for i, l := range lfu.lines {
+		if l.Valid && l.Freq < minFreq {
+			minFreq = l.Freq
+			minFreqIndex = i
+		}
+	}
+	if minFreqIndex != -1 {
+		evictedIndex := lfu.lines[minFreqIndex].Index
+		lfu.lines[minFreqIndex].Valid = false // Mark as evicted
+		return evictedIndex
+	}
+	return -1 // Indicate no eviction occurred (should not happen if cache is full)
 }
 
-func (c *LFU) GetCapacity() int {
-	return c.Capacity
+// Get the capacity of the LFU cache
+func (lfu *LFU) GetCapacity() int {
+	return lfu.capacity
 }
