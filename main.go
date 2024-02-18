@@ -16,8 +16,11 @@ func main() {
 	configFile := os.Args[1]
 	traceFile := os.Args[2]
 
+	// Initialize the cache configuration and the cache simulator
 	config := cache.InitializeConfig(configFile)
 	cache.InitializeCaches(&config)
 	simulator := instruction.NewCacheSimulator(&config)
-	simulator.ReadTraceFile(traceFile)
+
+	// Execute the cache simulator
+	simulator.Execute(traceFile)
 }

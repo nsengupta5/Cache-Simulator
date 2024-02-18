@@ -73,5 +73,7 @@ func (lfu *LFU) Evict() int {
 		lfu.lines[minFreqIndex].Valid = false // Mark as evicted
 		return evictedIndex
 	}
-	return -1 // Indicate no eviction occurred (should not happen if cache is full)
+
+	// Indicate no eviction occurred (should not happen if cache is full)
+	return -1
 }
