@@ -1,5 +1,16 @@
 package cache
 
+// Ths file contains the implementation of the Least Recently Used (LRU)
+// cache replacement policy. The LRU policy evicts the least recently used
+// cache line when the cache is full and a new cache line needs to be inserted.
+// To implement the LRU policy, we use a doubly-linked list to keep track of
+// the order in which cache lines are accessed. When a cache line is accessed,
+// it is moved to the front of the list, marking it as the most recently used
+// cache line. When a cache line needs to be evicted, the least recently used
+// cache line is removed from the tail of the list. This ensures that the
+// eviction process is in O(1) time complexity, as we can simply remove the
+// tail of the list to evict the least recently used cache line.
+
 type LRU struct {
 	capacity   int
 	cache      map[int]*CacheLine // Maps tags to pointers to cache lines
