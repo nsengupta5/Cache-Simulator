@@ -35,7 +35,7 @@ func (cs *CacheSimulator) ReadTraceFile(traceFile string) {
 	defer file.Close()
 
 	// Use a buffer to read the file line by line, to avoid reading
-	// the entire file into memory
+	// the entire file into memory and to handle large trace files
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		instruction := scanner.Text()
