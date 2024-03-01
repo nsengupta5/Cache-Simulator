@@ -1,4 +1,5 @@
 # Cache-Simulator
+A multi-hierarchy cache simulator that supports LRU, LFU and Round Robin eviction policies
 
 ## Instructions
 
